@@ -1,0 +1,82 @@
+// src/controllers/todoController.js
+const Todo = require('../models/todoModel');
+const ReturnObject = require('../models/ReturnObject');
+
+exports.getAllTodos = async (req, res) => {
+  try {
+    const todos = await Todo.findAll();
+    res.json(new ReturnObject(statusCode = 200, message = 'Record Found Successfully', data =todos ));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.getTodoById = async (req, res) => {
+  const todoId = req.params.id;
+
+  try {
+    const todo = await Todo.findByPk(todoId);
+    if (todo) {
+      res.json(todo);
+    } else {
+      res.status(404).json({ message: 'Todo not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.createTodo = async (req, res) => {
+  const { title, completed } = req.body;
+
+  try {
+    const newTodo = await Todo.create({ title, completed });
+    res.status(201).json(newTodo);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.updateTodo = async (req, res) => {
+  const todoId = req.params.id;
+  const { title, completed } = req.body;
+
+  try {
+    const todo = await Todo.findByPk(todoId);
+
+    if (todo) {
+      todo.title = title || todo.title;
+      todo.completed = completed || todo.completed;
+
+      await todo.save();
+
+      res.json(todo);
+    } else {
+      res.status(404).json({ message: 'Todo not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.deleteTodo = async (req, res) => {
+  const todoId = req.params.id;
+
+  try {
+    const todo = await Todo.findByPk(todoId);
+
+    if (todo) {
+      await todo.destroy();
+      res.json({ message: 'Todo deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Todo not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
